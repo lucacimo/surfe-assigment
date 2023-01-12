@@ -4,7 +4,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Tutorial
 
-This source code is from the Surfe home coding assignment
+This source code is for the Surfe home coding assignment
 
 ## Available Scripts
 
