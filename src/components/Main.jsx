@@ -108,9 +108,6 @@ const Main = ({ activeNote, onUpdateNote }) => {
     <div className="app-main">
       <MentionList />
       <div className="app-main-note-edit">
-        <div className="backdrop">
-          <div className="highlights" />
-        </div>
         <textarea
           ref={ref}
           placeholder="Write your note here..."
