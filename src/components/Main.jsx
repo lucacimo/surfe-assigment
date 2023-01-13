@@ -1,21 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import Mention from "./Mention";
 import MentionList from "./MentionList";
+import { getCaretCoordinates } from "../utils/utils";
 
 const Main = ({ activeNote, onUpdateNote }) => {
   const [mentionOpen, setMentionOpen] = useState(false);
   const [users, setUsers] = useState([]);
+  const [isLoading, setLoading] = useState(false);
   const ref = useRef(null);
-  const activeNoteRef = useRef(null);
 
   const saveNote = async () => {
     try {
       const sessionId = sessionStorage.getItem("notes-session-id");
       const res = await fetch(
-        `https://challenge.surfe.com/${sessionId}/notes/${activeNoteRef.current.id}`,
+        `https://challenge.surfe.com/${sessionId}/notes/${activeNote.id}`,
         {
           method: "PUT",
-          body: JSON.stringify({ body: activeNoteRef.current.body }),
+          body: JSON.stringify({ body: activeNote.body }),
           headers: { "Content-Type": "application/json" },
         }
       );
@@ -24,8 +25,19 @@ const Main = ({ activeNote, onUpdateNote }) => {
     }
   };
 
+  useEffect(() => {
+    let getData;
+    if (activeNote) {
+      getData = setTimeout(() => {
+        saveNote();
+      }, 2000);
+    }
+
+    return () => clearTimeout(getData);
+  }, [activeNote]);
+
   const getUsers = async () => {
-    setMentionOpen(true);
+    setLoading(true);
     fetch("https://challenge.surfe.com/users")
       .then((res) => res.json())
       .then((data) => {
@@ -33,34 +45,11 @@ const Main = ({ activeNote, onUpdateNote }) => {
       })
       .catch((error) => {
         console.log(error);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
-
-  useEffect(() => {
-    activeNoteRef.current = activeNote;
-  }, [activeNote]);
-
-  useEffect(() => {
-    const textArea = ref.current;
-    let timeoutId;
-
-    if (textArea) {
-      textArea.addEventListener("keyup", function () {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(saveNote, 1000);
-      });
-      textArea.addEventListener("keydown", function (event) {
-        if (event.key === "@") {
-          getUsers();
-        }
-        if (event.key === "Backspace") {
-          setMentionOpen(false);
-        }
-      });
-    }
-
-    return () => clearTimeout(timeoutId);
-  }, [ref.current]);
 
   const onEditField = (field, value) => {
     onUpdateNote({
@@ -82,12 +71,17 @@ const Main = ({ activeNote, onUpdateNote }) => {
       lastModified: Date.now(),
     });
 
-    ref.current.dispatchEvent(
-      new KeyboardEvent("keyup", {
-        key: "Enter",
-      })
-    );
     setMentionOpen(false);
+  };
+
+  const displayUsers = (event) => {
+    if (event.key === "@") {
+      setMentionOpen(true);
+      getUsers();
+    }
+    if (event.key === "Backspace") {
+      setMentionOpen(false);
+    }
   };
 
   const handleDrop = (event) => {
@@ -102,12 +96,6 @@ const Main = ({ activeNote, onUpdateNote }) => {
       ["body"]: `${before}@${mention}${after}`,
       lastModified: Date.now(),
     });
-
-    ref.current.dispatchEvent(
-      new KeyboardEvent("keyup", {
-        key: "Enter",
-      })
-    );
   };
 
   const handleDragOver = (event) => {
@@ -118,22 +106,38 @@ const Main = ({ activeNote, onUpdateNote }) => {
 
   return (
     <div className="app-main">
+      <MentionList />
       <div className="app-main-note-edit">
-        <MentionList />
+        <div className="backdrop">
+          <div className="highlights" />
+        </div>
         <textarea
           ref={ref}
           placeholder="Write your note here..."
           value={activeNote.body}
+          onKeyDown={displayUsers}
           onChange={(e) => onEditField("body", e.target.value)}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
         />
         {mentionOpen && (
-          <Mention
-            users={users}
-            handleMention={handleMention}
-            setMentionOpen={setMentionOpen}
-          />
+          <div
+            style={{
+              position: "absolute",
+              top:
+                getCaretCoordinates(ref.current, ref.current.selectionStart)
+                  .top + 10,
+              left: getCaretCoordinates(ref.current, ref.current.selectionStart)
+                .left,
+            }}
+          >
+            <Mention
+              users={users}
+              isLoading={isLoading}
+              handleMention={handleMention}
+              setMentionOpen={setMentionOpen}
+            />
+          </div>
         )}
       </div>
     </div>

@@ -4,7 +4,6 @@ const MentionList = () => {
   const [mostMentionedUsers, setMostMentionedUsers] = useState([]);
 
   useEffect(() => {
-    // Fetch the most mentioned users from the API
     fetch("https://challenge.surfe.com/users/mostMentioned")
       .then((res) => res.json())
       .then((data) => {
@@ -17,7 +16,7 @@ const MentionList = () => {
   };
 
   return (
-    <div>
+    <div className="most-mentioned-container">
       <h3>Most Mentioned Users</h3>
       <ul className="most-mentioned">
         {mostMentionedUsers.map((user) => (
