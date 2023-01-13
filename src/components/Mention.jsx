@@ -6,7 +6,7 @@ const Mention = ({
   setMentionOpen,
   isLoading = true,
 }) => (
-  <OutsideAlerter callback={setMentionOpen}>
+  <OutsideAlerter callback={() => setMentionOpen(false)}>
     {isLoading ? null : (
       <ul className="mention-widget">
         {users.map((user) => (
