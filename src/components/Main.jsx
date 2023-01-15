@@ -8,6 +8,8 @@ const Main = ({ activeNote, onUpdateNote }) => {
   const [users, setUsers] = useState([]);
   const [isLoading, setLoading] = useState(false);
   const ref = useRef(null);
+  const refHighlight = useRef(null);
+  const refBackdrop = useRef(null);
 
   const saveNote = async () => {
     try {
@@ -28,6 +30,9 @@ const Main = ({ activeNote, onUpdateNote }) => {
   useEffect(() => {
     let getData;
     if (activeNote) {
+      const highlightedText = applyHighlights(activeNote.body);
+      refHighlight.current.innerHTML = highlightedText;
+
       getData = setTimeout(() => {
         saveNote();
       }, 2000);
@@ -67,11 +72,12 @@ const Main = ({ activeNote, onUpdateNote }) => {
 
     onUpdateNote({
       ...activeNote,
-      ["body"]: `${textBefore}${user.username}${textAfter}`,
+      ["body"]: `${textBefore}${user.username}${textAfter} `,
       lastModified: Date.now(),
     });
 
     setMentionOpen(false);
+    ref.current.focus();
   };
 
   const displayUsers = (event) => {
@@ -93,13 +99,25 @@ const Main = ({ activeNote, onUpdateNote }) => {
 
     onUpdateNote({
       ...activeNote,
-      ["body"]: `${before}@${mention}${after}`,
+      ["body"]: `${before}@${mention}${after} `,
       lastModified: Date.now(),
     });
+    ref.current.focus();
   };
 
   const handleDragOver = (event) => {
     event.preventDefault();
+  };
+
+  const applyHighlights = (text) => {
+    return text
+      .replace(/\n$/g, "\n\n")
+      .replace(/(^|[^\S\n])@(\S+)/g, "$1<mark>@$2</mark>");
+  };
+
+  const handleScroll = () => {
+    const scrollTop = ref.current.scrollTop();
+    refBackdrop.current.scrollTop(scrollTop);
   };
 
   if (!activeNote) return <div className="no-active-note">No Active Note</div>;
@@ -108,8 +126,12 @@ const Main = ({ activeNote, onUpdateNote }) => {
     <div className="app-main">
       <MentionList />
       <div className="app-main-note-edit">
+        <div ref={refBackdrop} className="backdrop">
+          <div ref={refHighlight} className="highlights" />
+        </div>
         <textarea
           ref={ref}
+          onScroll={handleScroll}
           placeholder="Write your note here..."
           value={activeNote.body}
           onKeyDown={displayUsers}

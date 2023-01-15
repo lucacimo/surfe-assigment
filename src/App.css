@@ -161,3 +161,27 @@ textarea {
   padding: 10px;
   cursor: pointer;
 }
+
+backdrop {
+  overflow: auto;
+}
+
+.highlights {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  padding: 10px
+}
+
+.highlights {
+  color: transparent;
+  position: absolute;
+}
+
+mark {
+  color: transparent;
+  background: rgba(9, 30, 66, 0.08);
+}
+
+.backdrop {
+  background-color: #fff;
+}
