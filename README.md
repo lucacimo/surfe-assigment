@@ -28,3 +28,11 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
+# References
+
+Get textarea caret position
+https://github.com/component/textarea-caret-position
+
+Highlight text in a textarea
+https://codersblock.com/blog/highlight-text-inside-a-textarea/
+
