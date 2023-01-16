@@ -4,8 +4,8 @@ import Main from "./components/Main";
 import Sidebar from "./components/Sidebar";
 
 function App() {
-  const [notes, setNotes] = useState([]);
-  const [activeNote, setActiveNote] = useState(null);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [activeNote, setActiveNote] = useState<Note | null>(null);
 
   useEffect(() => {
     const sessionId = sessionStorage.getItem("notes-session-id");
@@ -20,7 +20,9 @@ function App() {
           `https://challenge.surfe.com/${sessionId}/notes`
         );
         const data = await res.json();
-        setNotes(data.map((note) => ({ ...note, lastModified: Date.now() })));
+        setNotes(
+          data.map((note: Note) => ({ ...note, lastModified: Date.now() }))
+        );
 
         if (data.length > 0) {
           setActiveNote(data[data.length - 1]);
@@ -43,7 +45,7 @@ function App() {
           headers: { "Content-Type": "application/json" },
         }
       );
-      let newNote = await res.json();
+      let newNote: Note = await res.json();
       newNote = { ...newNote, lastModified: Date.now() };
       setNotes([newNote, ...notes]);
       setActiveNote(newNote);
@@ -52,7 +54,7 @@ function App() {
     }
   };
 
-  const onUpdateNote = (updatedNote) => {
+  const onUpdateNote = (updatedNote: Note) => {
     const updatedNotesArr = notes.map((note) => {
       if (note.id === updatedNote.id) {
         return updatedNote;

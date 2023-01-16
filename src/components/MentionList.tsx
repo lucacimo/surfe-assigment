@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, DragEvent } from "react";
 
 const MentionList = () => {
-  const [mostMentionedUsers, setMostMentionedUsers] = useState([]);
+  const [mostMentionedUsers, setMostMentionedUsers] = useState<User[]>([]);
 
   useEffect(() => {
     fetch("https://challenge.surfe.com/users/mostMentioned")
@@ -11,8 +11,9 @@ const MentionList = () => {
       });
   }, []);
 
-  const handleDragStart = (event) => {
-    event.dataTransfer.setData("text", event.target.innerText);
+  const handleDragStart = (event: DragEvent) => {
+    const target = event.target as HTMLInputElement;
+    event.dataTransfer.setData("text", target.innerText);
   };
 
   return (

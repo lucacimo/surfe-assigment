@@ -1,9 +1,18 @@
+import { Dispatch, SetStateAction } from "react";
+
+type SidebarProps = {
+  notes: Note[];
+  onAddNote: () => Promise<void>;
+  activeNote: Note | null;
+  setActiveNote: Dispatch<SetStateAction<Note | null>>;
+};
+
 const Sidebar = ({
   notes,
   onAddNote,
   activeNote,
   setActiveNote,
-}) => {
+}: SidebarProps): JSX.Element => {
   const sortedNotes = notes.sort((a, b) => b.lastModified - a.lastModified);
 
   return (
@@ -15,7 +24,9 @@ const Sidebar = ({
       <div className="app-sidebar-notes">
         {sortedNotes.map((note) => (
           <div
-            className={`app-sidebar-note ${note.id === activeNote?.id && "active"}`}
+            className={`app-sidebar-note ${
+              note.id === activeNote?.id && "active"
+            }`}
             onClick={() => setActiveNote(note)}
           >
             <p>{note.body && note.body.substr(0, 100) + "..."}</p>

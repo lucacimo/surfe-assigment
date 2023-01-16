@@ -1,37 +1,53 @@
-import { useEffect, useRef, useState } from "react";
+import React, {
+  DragEvent,
+  KeyboardEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import Mention from "./Mention";
 import MentionList from "./MentionList";
 import { getCaretCoordinates } from "../utils/utils";
 
-const Main = ({ activeNote, onUpdateNote }) => {
+type MainProps = {
+  activeNote: Note | null;
+  onUpdateNote: (updatedNote: Note) => void;
+};
+
+const Main = ({ activeNote, onUpdateNote }: MainProps): JSX.Element => {
   const [mentionOpen, setMentionOpen] = useState(false);
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setLoading] = useState(false);
-  const ref = useRef(null);
-  const refHighlight = useRef(null);
-  const refBackdrop = useRef(null);
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const refHighlight = useRef<HTMLDivElement>(null);
+  const refBackdrop = useRef<HTMLDivElement>(null);
 
   const saveNote = async () => {
     try {
       const sessionId = sessionStorage.getItem("notes-session-id");
-      const res = await fetch(
-        `https://challenge.surfe.com/${sessionId}/notes/${activeNote.id}`,
-        {
-          method: "PUT",
-          body: JSON.stringify({ body: activeNote.body }),
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    } catch (error) {
+      if (activeNote !== null) {
+        const res = await fetch(
+          `https://challenge.surfe.com/${sessionId}/notes/${activeNote.id}`,
+          {
+            method: "PUT",
+            body: JSON.stringify({ body: activeNote.body }),
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+    } catch (error: unknown) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    let getData;
+    let getData: ReturnType<typeof setTimeout>;
     if (activeNote) {
       const highlightedText = applyHighlights(activeNote.body);
-      refHighlight.current.innerHTML = highlightedText;
+
+      if (refHighlight.current !== null) {
+        refHighlight.current.innerHTML = highlightedText;
+      }
 
       getData = setTimeout(() => {
         saveNote();
@@ -56,7 +72,7 @@ const Main = ({ activeNote, onUpdateNote }) => {
       });
   };
 
-  const onEditField = (field, value) => {
+  const onEditField = (field: string, value: string) => {
     onUpdateNote({
       ...activeNote,
       [field]: value,
@@ -64,7 +80,7 @@ const Main = ({ activeNote, onUpdateNote }) => {
     });
   };
 
-  const handleMention = (user) => {
+  const handleMention = (user: User) => {
     const cursorStart = ref.current.selectionStart;
     const cursorEnd = ref.current.selectionEnd;
     let textBefore = activeNote.body.slice(0, cursorStart);
@@ -80,7 +96,7 @@ const Main = ({ activeNote, onUpdateNote }) => {
     ref.current.focus();
   };
 
-  const displayUsers = (event) => {
+  const displayUsers = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "@") {
       setMentionOpen(true);
       getUsers();
@@ -90,10 +106,10 @@ const Main = ({ activeNote, onUpdateNote }) => {
     }
   };
 
-  const handleDrop = (event) => {
+  const handleDrop = (event: DragEvent) => {
     event.preventDefault();
     const mention = event.dataTransfer.getData("text");
-    const index = event.target.selectionStart;
+    const index = ref.current.selectionStart;
     const before = activeNote.body.slice(0, index);
     const after = activeNote.body.slice(index);
 
@@ -105,19 +121,19 @@ const Main = ({ activeNote, onUpdateNote }) => {
     ref.current.focus();
   };
 
-  const handleDragOver = (event) => {
+  const handleDragOver = (event: DragEvent) => {
     event.preventDefault();
   };
 
-  const applyHighlights = (text) => {
+  const applyHighlights = (text: string) => {
     return text
       .replace(/\n$/g, "\n\n")
       .replace(/(^|[^\S\n])@(\S+)/g, "$1<mark>@$2</mark>");
   };
 
   const handleScroll = () => {
-    const scrollTop = ref.current.scrollTop();
-    refBackdrop.current.scrollTop(scrollTop);
+    const scrollTop = ref.current.scrollTop;
+    refBackdrop.current.scrollTop = scrollTop;
   };
 
   if (!activeNote) return <div className="no-active-note">No Active Note</div>;
@@ -131,6 +147,7 @@ const Main = ({ activeNote, onUpdateNote }) => {
         </div>
         <textarea
           ref={ref}
+          rows={10}
           onScroll={handleScroll}
           placeholder="Write your note here..."
           value={activeNote.body}
